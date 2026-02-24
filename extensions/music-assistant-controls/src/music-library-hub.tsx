@@ -12,7 +12,7 @@ import {
   RepeatMode,
   MediaItemType,
 } from "./external-code/interfaces";
-import { getStoredQueueID } from "./use-selected-player-id";
+import { getSelectedQueueID } from "./use-selected-player-id";
 
 type Tab = "search" | "browse" | "recent" | "queue";
 type BrowseView = "artists" | "albums" | "playlists" | "artist-detail" | "album-detail" | "playlist-detail";
@@ -126,20 +126,14 @@ function SearchTab({
     },
   );
 
-  const storedQueueId = getStoredQueueID();
-
   const addToQueue = async (item: MediaItemType, itemName: string) => {
-    if (!storedQueueId?.queue_id) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "No Active Player",
-        message: "Please select an active player first using 'Set Active Player' command",
-      });
+    const queueId = await getSelectedQueueID();
+    if (!queueId) {
       return;
     }
 
     try {
-      await client.playMedia(item, storedQueueId.queue_id, QueueOption.NEXT);
+      await client.playMedia(item, queueId, QueueOption.NEXT);
       await showToast({
         style: Toast.Style.Success,
         title: "Added to Queue",
@@ -359,20 +353,14 @@ function BrowseTab({
     },
   );
 
-  const storedQueueId = getStoredQueueID();
-
   const addToQueue = async (item: MediaItemType, itemName: string) => {
-    if (!storedQueueId?.queue_id) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "No Active Player",
-        message: "Please select an active player first",
-      });
+    const queueId = await getSelectedQueueID();
+    if (!queueId) {
       return;
     }
 
     try {
-      await client.playMedia(item, storedQueueId.queue_id, QueueOption.NEXT);
+      await client.playMedia(item, queueId, QueueOption.NEXT);
       await showToast({
         style: Toast.Style.Success,
         title: "Added to Queue",
@@ -682,20 +670,14 @@ function RecentlyPlayedTab({ client }: { client: MusicAssistantClient }) {
     keepPreviousData: true,
   });
 
-  const storedQueueId = getStoredQueueID();
-
   const addToQueue = async (item: ItemMapping, itemName: string) => {
-    if (!storedQueueId?.queue_id) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "No Active Player",
-        message: "Please select an active player first",
-      });
+    const queueId = await getSelectedQueueID();
+    if (!queueId) {
       return;
     }
 
     try {
-      await client.playMedia(item as unknown as MediaItemType, storedQueueId.queue_id, QueueOption.NEXT);
+      await client.playMedia(item as unknown as MediaItemType, queueId, QueueOption.NEXT);
       await showToast({
         style: Toast.Style.Success,
         title: "Added to Queue",
@@ -748,7 +730,7 @@ function RecentlyPlayedTab({ client }: { client: MusicAssistantClient }) {
 
 // Queue Manager Tab Component
 function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
-  const storedQueueId = getStoredQueueID();
+  const { data: queueId } = useCachedPromise(async () => await getSelectedQueueID(), []);
 
   const {
     isLoading,
@@ -765,18 +747,18 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
 
       return { queue, items };
     },
-    [storedQueueId?.queue_id],
+    [queueId],
     {
       keepPreviousData: true,
-      execute: !!storedQueueId?.queue_id,
+      execute: !!queueId,
     },
   );
 
   const deleteItem = async (itemId: string, itemName: string) => {
-    if (!storedQueueId?.queue_id) return;
+    if (!queueId) return;
 
     try {
-      await client.queueCommandDelete(storedQueueId.queue_id, itemId);
+      await client.queueCommandDelete(queueId, itemId);
       await showToast({
         style: Toast.Style.Success,
         title: "Removed from Queue",
@@ -793,12 +775,12 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
   };
 
   const moveItem = async (itemId: string, direction: "up" | "down" | "next") => {
-    if (!storedQueueId?.queue_id) return;
+    if (!queueId) return;
 
     const posShift = direction === "up" ? -1 : direction === "down" ? 1 : 0;
 
     try {
-      await client.queueCommandMoveItem(storedQueueId.queue_id, itemId, posShift);
+      await client.queueCommandMoveItem(queueId, itemId, posShift);
       await showToast({
         style: Toast.Style.Success,
         title: "Item Moved",
@@ -815,7 +797,7 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
   };
 
   const clearQueue = async () => {
-    if (!storedQueueId?.queue_id) return;
+    if (!queueId) return;
 
     const confirmed = await confirmAlert({
       title: "Clear Queue",
@@ -829,7 +811,7 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
     if (!confirmed) return;
 
     try {
-      await client.queueCommandClear(storedQueueId.queue_id);
+      await client.queueCommandClear(queueId);
       await showToast({
         style: Toast.Style.Success,
         title: "Queue Cleared",
@@ -846,10 +828,10 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
   };
 
   const toggleShuffle = async () => {
-    if (!storedQueueId?.queue_id || !queueData?.queue) return;
+    if (!queueId || !queueData?.queue) return;
 
     try {
-      await client.queueCommandShuffle(storedQueueId.queue_id, !queueData.queue.shuffle_enabled);
+      await client.queueCommandShuffle(queueId, !queueData.queue.shuffle_enabled);
       await showToast({
         style: Toast.Style.Success,
         title: "Shuffle Toggled",
@@ -866,7 +848,7 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
   };
 
   const cycleRepeat = async () => {
-    if (!storedQueueId?.queue_id || !queueData?.queue) return;
+    if (!queueId || !queueData?.queue) return;
 
     const nextMode =
       queueData.queue.repeat_mode === RepeatMode.OFF
@@ -876,7 +858,7 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
           : RepeatMode.OFF;
 
     try {
-      await client.queueCommandRepeat(storedQueueId.queue_id, nextMode);
+      await client.queueCommandRepeat(queueId, nextMode);
       await showToast({
         style: Toast.Style.Success,
         title: "Repeat Mode Changed",
@@ -892,7 +874,7 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
     }
   };
 
-  if (!storedQueueId?.queue_id) {
+  if (!queueId) {
     return (
       <List.Section title="Queue Manager">
         <List.Item
