@@ -27,7 +27,7 @@
     },
     {
       "name": "play-pause",
-      "title": "Toggle",
+      "title": "Toggle Play",
       "subtitle": "Toggle play/pause on the active player.",
       "description": "Plays or pauses song on the currently selected menu bar player.",
       "mode": "no-view"
@@ -63,7 +63,7 @@
     },
     {
       "name": "volume-mute",
-      "title": "Mute Toggle",
+      "title": "Toggle Mute",
       "subtitle": "Toggle mute on the active player.",
       "description": "Toggles the mute state on the currently selected player.",
       "mode": "no-view"
