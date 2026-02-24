@@ -23,6 +23,7 @@ describe("volume-mute command", () => {
       volumeMute: jest.fn(),
       getPlayer: jest.fn(),
       supportsMuteControl: jest.fn(),
+      setVolume: jest.fn(),
     } as any;
 
     MockMusicAssistantClient.mockImplementation(() => mockClientInstance);
@@ -101,11 +102,12 @@ describe("volume-mute command", () => {
     expect(mockShowFailureToast).not.toHaveBeenCalled();
   });
 
-  it("should show error toast when player does not support mute control", async () => {
+  it("should use volume control fallback when player does not support mute (volume > 0)", async () => {
     const selectedPlayerID = "test-player-123";
     mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
-    mockClientInstance.getPlayer.mockResolvedValue({ volume_muted: false, mute_control: "none" } as any);
+    mockClientInstance.getPlayer.mockResolvedValue({ volume_level: 75, mute_control: "none" } as any);
     mockClientInstance.supportsMuteControl.mockReturnValue(false);
+    mockClientInstance.setVolume.mockResolvedValue(undefined);
 
     await volumeMuteMain();
 
@@ -114,10 +116,32 @@ describe("volume-mute command", () => {
     expect(mockClientInstance.getPlayer).toHaveBeenCalledWith(selectedPlayerID);
     expect(mockClientInstance.supportsMuteControl).toHaveBeenCalled();
     expect(mockClientInstance.volumeMute).not.toHaveBeenCalled();
+    expect(mockClientInstance.setVolume).toHaveBeenCalledWith(selectedPlayerID, 0);
     expect(mockShowToast).toHaveBeenCalledWith({
-      style: "failure",
-      title: "Mute not supported",
-      message: "This player does not support mute control",
+      style: "success",
+      title: "🔇",
+    });
+    expect(mockShowFailureToast).not.toHaveBeenCalled();
+  });
+
+  it("should use volume control fallback when player does not support mute (volume = 0)", async () => {
+    const selectedPlayerID = "test-player-123";
+    mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
+    mockClientInstance.getPlayer.mockResolvedValue({ volume_level: 0, mute_control: "none" } as any);
+    mockClientInstance.supportsMuteControl.mockReturnValue(false);
+    mockClientInstance.setVolume.mockResolvedValue(undefined);
+
+    await volumeMuteMain();
+
+    expect(mockGetSelectedQueueID).toHaveBeenCalledTimes(1);
+    expect(MockMusicAssistantClient).toHaveBeenCalledTimes(1);
+    expect(mockClientInstance.getPlayer).toHaveBeenCalledWith(selectedPlayerID);
+    expect(mockClientInstance.supportsMuteControl).toHaveBeenCalled();
+    expect(mockClientInstance.volumeMute).not.toHaveBeenCalled();
+    expect(mockClientInstance.setVolume).toHaveBeenCalledWith(selectedPlayerID, 50);
+    expect(mockShowToast).toHaveBeenCalledWith({
+      style: "success",
+      title: "🔊",
     });
     expect(mockShowFailureToast).not.toHaveBeenCalled();
   });

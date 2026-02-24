@@ -10,15 +10,28 @@ export default async function main() {
   try {
     const client = new MusicAssistantClient();
 
-    // Get current player and check if mute is supported
+    // Get current player
     const player = await client.getPlayer(selectedPlayerID);
     
     if (!client.supportsMuteControl(player)) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Mute not supported",
-        message: "This player does not support mute control",
-      });
+      // Fallback: use volume control to simulate mute
+      const currentVolume = player.volume_level ?? 0;
+      
+      if (currentVolume > 0) {
+        // Mute by setting volume to 0
+        await client.setVolume(selectedPlayerID, 0);
+        await showToast({
+          style: Toast.Style.Success,
+          title: "🔇",
+        });
+      } else {
+        // Unmute by setting volume to a default level
+        await client.setVolume(selectedPlayerID, 50);
+        await showToast({
+          style: Toast.Style.Success,
+          title: "🔊",
+        });
+      }
       return;
     }
 
