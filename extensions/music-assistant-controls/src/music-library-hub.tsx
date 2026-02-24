@@ -299,15 +299,18 @@ function SearchTab({
         </List.Section>
       )}
 
-      {totalResults > 50 && (
+      {(searchResults.artists && searchResults.artists.length > 20) ||
+      (searchResults.albums && searchResults.albums.length > 20) ||
+      (searchResults.tracks && searchResults.tracks.length > 20) ||
+      (searchResults.playlists && searchResults.playlists.length > 20) ? (
         <List.Section title="Info">
           <List.Item
-            title="Results limited to 50 items"
+            title="Showing first 20 results per category"
             subtitle="Refine your search for more specific results"
             icon={Icon.Info}
           />
         </List.Section>
-      )}
+      ) : null}
     </>
   );
 }
@@ -734,12 +737,6 @@ function RecentlyPlayedTab({ client }: { client: MusicAssistantClient }) {
               actions={
                 <ActionPanel>
                   <Action title="Add to Queue" icon={Icon.Plus} onAction={() => addToQueue(item, item.name)} />
-                  <Action
-                    title="Back to Tabs"
-                    icon={Icon.ArrowLeft}
-                    shortcut={{ modifiers: ["cmd"], key: "t" }}
-                    onAction={() => onTabChange("recent")}
-                  />
                 </ActionPanel>
               }
             />
