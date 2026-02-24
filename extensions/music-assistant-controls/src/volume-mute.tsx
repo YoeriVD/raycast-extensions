@@ -3,6 +3,8 @@ import { showFailureToast } from "@raycast/utils";
 import MusicAssistantClient from "./music-assistant-client";
 import { getSelectedQueueID } from "./use-selected-player-id";
 
+const DEFAULT_UNMUTE_VOLUME = 50;
+
 export default async function main() {
   const selectedPlayerID = await getSelectedQueueID();
   if (!selectedPlayerID) return;
@@ -26,7 +28,7 @@ export default async function main() {
         });
       } else {
         // Unmute by setting volume to a default level
-        await client.setVolume(selectedPlayerID, 50);
+        await client.setVolume(selectedPlayerID, DEFAULT_UNMUTE_VOLUME);
         await showToast({
           style: Toast.Style.Success,
           title: "🔊",
