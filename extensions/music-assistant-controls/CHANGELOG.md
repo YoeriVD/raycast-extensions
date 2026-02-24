@@ -1,6 +1,6 @@
 # Music Assistant Controls Changelog
 
-## [Current Track Command with Album Art and Quick Actions] - {PR_MERGE_DATE}
+## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ✨ New Features
 
@@ -14,12 +14,10 @@
 
 ### 🎨 UI/UX Enhancements
 
-- **Large album artwork** - Centered 300x300px album cover for immersive viewing experience
+- **Large album artwork** - Centered 300x300px album cover for immersive viewing experience in Current Track command
 - **Keyboard shortcuts** - Quick access with Cmd+S (shuffle), Cmd+R (repeat), Cmd+F (favorites), Cmd+P (playlists)
 - **Real-time state display** - Shows current shuffle and repeat settings with descriptive text
 - **Automatic refresh** - Updates display when track changes or actions are performed
-
-## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ⚡ Performance & Reliability
 
