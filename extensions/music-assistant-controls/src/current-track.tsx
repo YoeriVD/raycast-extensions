@@ -1,13 +1,13 @@
 import { Action, ActionPanel, Detail, Icon, showToast, Toast } from "@raycast/api";
-import { useCachedPromise } from "@raycast/utils";
+import { useCachedPromise, useLocalStorage } from "@raycast/utils";
 import MusicAssistantClient from "./music-assistant-client";
-import { useSelectedPlayerId } from "./use-selected-player-id";
+import { selectedPlayerKey, StoredQueue } from "./use-selected-player-id";
 import { RepeatMode } from "./external-code/interfaces";
 import React from "react";
 
 export default function CurrentTrackCommand() {
   const client = new MusicAssistantClient();
-  const { storedQueueId } = useSelectedPlayerId();
+  const { value: storedQueueId } = useLocalStorage<StoredQueue>(selectedPlayerKey);
 
   const {
     isLoading,
