@@ -43,8 +43,8 @@ export default function MusicLibraryHubCommand() {
     <List
       navigationTitle="Music Library Hub"
       searchBarPlaceholder="Search your library..."
-      searchText={activeTab === "search" ? searchQuery : undefined}
-      onSearchTextChange={activeTab === "search" ? setSearchQuery : undefined}
+      searchText={activeTab === "search" ? searchQuery : ""}
+      onSearchTextChange={activeTab === "search" ? setSearchQuery : () => {}}
       throttle
     >
       <List.Section title="Tabs">
