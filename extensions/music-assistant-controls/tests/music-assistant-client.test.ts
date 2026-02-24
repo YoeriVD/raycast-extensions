@@ -159,6 +159,51 @@ describe("MusicAssistantClient", () => {
     });
   });
 
+  describe("volumeMute", () => {
+    it("should call playerCommandVolumeMute API method with correct parameters", async () => {
+      const playerId = "test-player-mute";
+      const muted = true;
+      const mockApi = {
+        playerCommandVolumeMute: jest.fn().mockResolvedValue(undefined),
+      };
+
+      mockExecuteApiCommand.mockImplementation(async (command) => {
+        return command(mockApi as any);
+      });
+
+      await client.volumeMute(playerId, muted);
+
+      expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+      expect(mockApi.playerCommandVolumeMute).toHaveBeenCalledWith(playerId, muted);
+    });
+
+    it("should handle unmute (muted=false) correctly", async () => {
+      const playerId = "test-player-mute";
+      const muted = false;
+      const mockApi = {
+        playerCommandVolumeMute: jest.fn().mockResolvedValue(undefined),
+      };
+
+      mockExecuteApiCommand.mockImplementation(async (command) => {
+        return command(mockApi as any);
+      });
+
+      await client.volumeMute(playerId, muted);
+
+      expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+      expect(mockApi.playerCommandVolumeMute).toHaveBeenCalledWith(playerId, false);
+    });
+
+    it("should handle errors from API command", async () => {
+      const playerId = "test-player-mute";
+      const error = new Error("Volume mute failed");
+
+      mockExecuteApiCommand.mockRejectedValue(error);
+
+      await expect(client.volumeMute(playerId, true)).rejects.toThrow("Volume mute failed");
+    });
+  });
+
   describe("getPlayer", () => {
     it("should call getPlayer with correct playerId", async () => {
       const playerId = "test-player-123";

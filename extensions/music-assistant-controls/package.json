@@ -62,6 +62,13 @@
       "mode": "no-view"
     },
     {
+      "name": "volume-mute",
+      "title": "Mute Toggle",
+      "subtitle": "Toggle mute on the active player.",
+      "description": "Toggles the mute state on the currently selected player.",
+      "mode": "no-view"
+    },
+    {
       "name": "manage-player-groups",
       "title": "Manage Player Groups",
       "subtitle": "Create, modify, and disband player sync groups",

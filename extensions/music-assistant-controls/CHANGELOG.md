@@ -1,5 +1,11 @@
 # Music Assistant Controls Changelog
 
+## [Volume Mute Toggle Command] - {PR_MERGE_DATE}
+
+### ✨ New Features
+
+- **Mute Toggle Command** - Dedicated command to toggle mute state on the active player with visual feedback showing state changes (MUTED/UNMUTED)
+
 ## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ⚡ Performance & Reliability
