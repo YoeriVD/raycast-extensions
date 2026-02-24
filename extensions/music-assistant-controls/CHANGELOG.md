@@ -1,6 +1,6 @@
 # Music Assistant Controls Changelog
 
-## [Music Library Hub] - {PR_MERGE_DATE}
+## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ✨ New Features
 
@@ -19,8 +19,6 @@
 - Pagination support for large result sets (20 items per page in browse)
 - Visual feedback with toasts for all operations (add to queue, remove, clear, etc.)
 - Color-coded icons for different media types (artists, albums, tracks, playlists)
-
-## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ⚡ Performance & Reliability
 
