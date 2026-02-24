@@ -1,12 +1,10 @@
 # Music Assistant Controls Changelog
 
-## [Previous Song Command] - {PR_MERGE_DATE}
+## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ✨ New Features
 
 - **Previous Song command** - Navigate backward through the queue with a dedicated "Previous Song" command that mirrors the existing "Next Song" functionality
-
-## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ⚡ Performance & Reliability
 
