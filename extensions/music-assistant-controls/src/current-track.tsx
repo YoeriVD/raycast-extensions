@@ -28,11 +28,12 @@ export default function CurrentTrackCommand() {
   const toggleShuffle = async () => {
     if (!queueData) return;
     try {
+      const wasEnabled = queueData.shuffle_enabled;
       await client.toggleShuffle(queueData.queue_id);
       await showToast({
         style: Toast.Style.Success,
         title: "Shuffle Toggled",
-        message: queueData.shuffle_enabled ? "Shuffle disabled" : "Shuffle enabled",
+        message: wasEnabled ? "Shuffle disabled" : "Shuffle enabled",
       });
       revalidate();
     } catch (error) {
@@ -162,7 +163,7 @@ export default function CurrentTrackCommand() {
             <>
               <ActionPanel.Section title="Queue Controls">
                 <Action
-                  title={client.getShuffleText(!queueData.shuffle_enabled)}
+                  title="Toggle Shuffle"
                   icon={Icon.Shuffle}
                   onAction={toggleShuffle}
                   shortcut={{ modifiers: ["cmd"], key: "s" }}
