@@ -21,13 +21,12 @@ export default async function main() {
     const playerAfter = await client.getPlayer(selectedPlayerID);
     const mutedAfter = playerAfter.volume_muted ?? false;
 
-    // Show success toast with state change
-    const statusBefore = mutedBefore ? "MUTED" : "UNMUTED";
-    const statusAfter = mutedAfter ? "MUTED" : "UNMUTED";
+    // Show success toast with icon
+    const icon = mutedAfter ? "🔇" : "🔊";
 
     await showToast({
       style: Toast.Style.Success,
-      title: `🔇 ${statusBefore} → ${statusAfter}`,
+      title: icon,
     });
   } catch (error) {
     showFailureToast(error, {

@@ -43,7 +43,7 @@ describe("volume-mute command", () => {
     expect(mockClientInstance.volumeMute).toHaveBeenCalledWith(selectedPlayerID, true);
     expect(mockShowToast).toHaveBeenCalledWith({
       style: "success",
-      title: "🔇 UNMUTED → MUTED",
+      title: "🔇",
     });
     expect(mockShowFailureToast).not.toHaveBeenCalled();
   });
@@ -63,7 +63,7 @@ describe("volume-mute command", () => {
     expect(mockClientInstance.volumeMute).toHaveBeenCalledWith(selectedPlayerID, false);
     expect(mockShowToast).toHaveBeenCalledWith({
       style: "success",
-      title: "🔇 MUTED → UNMUTED",
+      title: "🔊",
     });
     expect(mockShowFailureToast).not.toHaveBeenCalled();
   });
@@ -80,7 +80,7 @@ describe("volume-mute command", () => {
     expect(mockClientInstance.volumeMute).toHaveBeenCalledWith(selectedPlayerID, true);
     expect(mockShowToast).toHaveBeenCalledWith({
       style: "success",
-      title: "🔇 UNMUTED → MUTED",
+      title: "🔇",
     });
   });
 
