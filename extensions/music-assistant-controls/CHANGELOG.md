@@ -1,5 +1,24 @@
 # Music Assistant Controls Changelog
 
+## [Current Track Command with Album Art and Quick Actions] - {PR_MERGE_DATE}
+
+### ✨ New Features
+
+- **Current Track command** - View now-playing track with large album artwork (300x300px) and detailed metadata
+- **Shuffle toggle** - Quick button to toggle shuffle mode (OFF ↔ ON) with visual feedback
+- **Repeat mode cycling** - Cycle through repeat modes (OFF → ONE → ALL → OFF) with status display
+- **Add to Favorites** - One-click button to add current track to favorites with heart icon
+- **Add to Playlist** - Dropdown menu to select from available playlists and add current track instantly
+- **Track metadata display** - Shows track title, artist, album, duration, queue name, and player state
+- **Error handling** - User-friendly error messages for all API operations
+
+### 🎨 UI/UX Enhancements
+
+- **Large album artwork** - Centered 300x300px album cover for immersive viewing experience
+- **Keyboard shortcuts** - Quick access with Cmd+S (shuffle), Cmd+R (repeat), Cmd+F (favorites), Cmd+P (playlists)
+- **Real-time state display** - Shows current shuffle and repeat settings with descriptive text
+- **Automatic refresh** - Updates display when track changes or actions are performed
+
 ## [Menu Bar Performance & Stability] - {PR_MERGE_DATE}
 
 ### ⚡ Performance & Reliability

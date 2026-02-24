@@ -1234,4 +1234,220 @@ describe("MusicAssistantClient", () => {
       expect(members[2].player_id).toBe("member-2");
     });
   });
+
+  describe("Queue Control Methods for Current Track Command", () => {
+    describe("toggleShuffle", () => {
+      it("should call queueCommandShuffleToggle with correct queueId", async () => {
+        const queueId = "test-queue-123";
+        const mockApi = {
+          queueCommandShuffleToggle: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        await client.toggleShuffle(queueId);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.queueCommandShuffleToggle).toHaveBeenCalledWith(queueId);
+      });
+
+      it("should handle errors from API command", async () => {
+        const queueId = "test-queue-123";
+        const error = new Error("API Error");
+
+        mockExecuteApiCommand.mockRejectedValue(error);
+
+        await expect(client.toggleShuffle(queueId)).rejects.toThrow("API Error");
+      });
+    });
+
+    describe("cycleRepeatMode", () => {
+      it("should call queueCommandRepeatToggle with correct queueId", async () => {
+        const queueId = "test-queue-456";
+        const mockApi = {
+          queueCommandRepeatToggle: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        await client.cycleRepeatMode(queueId);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.queueCommandRepeatToggle).toHaveBeenCalledWith(queueId);
+      });
+
+      it("should handle errors from API command", async () => {
+        const queueId = "test-queue-456";
+        const error = new Error("API Error");
+
+        mockExecuteApiCommand.mockRejectedValue(error);
+
+        await expect(client.cycleRepeatMode(queueId)).rejects.toThrow("API Error");
+      });
+    });
+
+    describe("addToFavorites", () => {
+      it("should call addItemToFavorites with media item", async () => {
+        const item = { uri: "track-uri-123", name: "Test Track" };
+        const mockApi = {
+          addItemToFavorites: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        await client.addToFavorites(item);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.addItemToFavorites).toHaveBeenCalledWith(item);
+      });
+
+      it("should handle string URIs", async () => {
+        const uri = "track-uri-123";
+        const mockApi = {
+          addItemToFavorites: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        await client.addToFavorites(uri);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.addItemToFavorites).toHaveBeenCalledWith(uri);
+      });
+
+      it("should handle errors from API command", async () => {
+        const item = "track-uri-123";
+        const error = new Error("API Error");
+
+        mockExecuteApiCommand.mockRejectedValue(error);
+
+        await expect(client.addToFavorites(item)).rejects.toThrow("API Error");
+      });
+    });
+
+    describe("getLibraryPlaylists", () => {
+      it("should call getLibraryPlaylists with limit and offset", async () => {
+        const mockPlaylists = [
+          { item_id: "1", name: "Playlist 1" },
+          { item_id: "2", name: "Playlist 2" },
+        ];
+        const mockApi = {
+          getLibraryPlaylists: jest.fn().mockResolvedValue(mockPlaylists),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        const result = await client.getLibraryPlaylists(20, 0);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.getLibraryPlaylists).toHaveBeenCalledWith(undefined, undefined, 20, 0);
+        expect(result).toEqual(mockPlaylists);
+      });
+
+      it("should handle errors from API command", async () => {
+        const error = new Error("API Error");
+
+        mockExecuteApiCommand.mockRejectedValue(error);
+
+        await expect(client.getLibraryPlaylists(20, 0)).rejects.toThrow("API Error");
+      });
+    });
+
+    describe("addTracksToPlaylist", () => {
+      it("should call addPlaylistTracks with correct parameters", async () => {
+        const playlistId = "playlist-123";
+        const trackUris = ["track-uri-1", "track-uri-2"];
+        const mockApi = {
+          addPlaylistTracks: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        await client.addTracksToPlaylist(playlistId, trackUris);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.addPlaylistTracks).toHaveBeenCalledWith(playlistId, trackUris);
+      });
+
+      it("should handle numeric playlist IDs", async () => {
+        const playlistId = 123;
+        const trackUris = ["track-uri-1"];
+        const mockApi = {
+          addPlaylistTracks: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockExecuteApiCommand.mockImplementation(async (command) => {
+          return command(mockApi as any);
+        });
+
+        await client.addTracksToPlaylist(playlistId, trackUris);
+
+        expect(mockExecuteApiCommand).toHaveBeenCalledTimes(1);
+        expect(mockApi.addPlaylistTracks).toHaveBeenCalledWith(playlistId, trackUris);
+      });
+
+      it("should handle errors from API command", async () => {
+        const playlistId = "playlist-123";
+        const trackUris = ["track-uri-1"];
+        const error = new Error("API Error");
+
+        mockExecuteApiCommand.mockRejectedValue(error);
+
+        await expect(client.addTracksToPlaylist(playlistId, trackUris)).rejects.toThrow("API Error");
+      });
+    });
+  });
+
+  describe("Formatting Helper Methods", () => {
+    describe("formatDuration", () => {
+      it("should format duration correctly", () => {
+        expect(client.formatDuration(0)).toBe("0:00");
+        expect(client.formatDuration(45)).toBe("0:45");
+        expect(client.formatDuration(60)).toBe("1:00");
+        expect(client.formatDuration(125)).toBe("2:05");
+        expect(client.formatDuration(225)).toBe("3:45");
+        expect(client.formatDuration(3661)).toBe("61:01");
+      });
+
+      it("should handle undefined duration", () => {
+        expect(client.formatDuration(undefined)).toBe("0:00");
+      });
+    });
+
+    describe("getShuffleText", () => {
+      it("should return correct text for shuffle enabled", () => {
+        expect(client.getShuffleText(true)).toBe("Shuffle: ON");
+      });
+
+      it("should return correct text for shuffle disabled", () => {
+        expect(client.getShuffleText(false)).toBe("Shuffle: OFF");
+      });
+    });
+
+    describe("getRepeatText", () => {
+      it("should return correct text for RepeatMode.OFF", () => {
+        expect(client.getRepeatText("off" as any)).toBe("Repeat: OFF");
+      });
+
+      it("should return correct text for RepeatMode.ONE", () => {
+        expect(client.getRepeatText("one" as any)).toBe("Repeat: ONE");
+      });
+
+      it("should return correct text for RepeatMode.ALL", () => {
+        expect(client.getRepeatText("all" as any)).toBe("Repeat: ALL");
+      });
+    });
+  });
 });
