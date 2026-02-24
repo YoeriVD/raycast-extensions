@@ -138,7 +138,7 @@ describe("volume-mute command", () => {
     expect(mockClientInstance.getPlayer).toHaveBeenCalledWith(selectedPlayerID);
     expect(mockClientInstance.supportsMuteControl).toHaveBeenCalled();
     expect(mockClientInstance.volumeMute).not.toHaveBeenCalled();
-    expect(mockClientInstance.setVolume).toHaveBeenCalledWith(selectedPlayerID, 50);
+    expect(mockClientInstance.setVolume).toHaveBeenCalledWith(selectedPlayerID, 10);
     expect(mockShowToast).toHaveBeenCalledWith({
       style: "success",
       title: "🔊",

@@ -3,7 +3,7 @@ import { showFailureToast } from "@raycast/utils";
 import MusicAssistantClient from "./music-assistant-client";
 import { getSelectedQueueID } from "./use-selected-player-id";
 
-const DEFAULT_UNMUTE_VOLUME = 50;
+const DEFAULT_UNMUTE_VOLUME = 10;
 
 export default async function main() {
   const selectedPlayerID = await getSelectedQueueID();
