@@ -10,9 +10,20 @@ export default async function main() {
   try {
     const client = new MusicAssistantClient();
 
-    // Get current mute state before
-    const playerBefore = await client.getPlayer(selectedPlayerID);
-    const mutedBefore = playerBefore.volume_muted ?? false;
+    // Get current player and check if mute is supported
+    const player = await client.getPlayer(selectedPlayerID);
+    
+    if (!client.supportsMuteControl(player)) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Mute not supported",
+        message: "This player does not support mute control",
+      });
+      return;
+    }
+
+    // Get current mute state
+    const mutedBefore = player.volume_muted ?? false;
 
     // Toggle mute state
     await client.volumeMute(selectedPlayerID, !mutedBefore);

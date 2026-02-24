@@ -575,6 +575,31 @@ describe("MusicAssistantClient", () => {
       });
     });
 
+    describe("supportsMuteControl", () => {
+      it("should return true when player has absolute mute control", () => {
+        const player = { player_id: "test", mute_control: "absolute" } as any;
+        const result = client.supportsMuteControl(player);
+        expect(result).toBe(true);
+      });
+
+      it("should return false when player has no mute control", () => {
+        const player = { player_id: "test", mute_control: "none" } as any;
+        const result = client.supportsMuteControl(player);
+        expect(result).toBe(false);
+      });
+
+      it("should return false when player is undefined", () => {
+        const result = client.supportsMuteControl(undefined);
+        expect(result).toBe(false);
+      });
+
+      it("should return false when mute_control is undefined", () => {
+        const player = { player_id: "test" } as any;
+        const result = client.supportsMuteControl(player);
+        expect(result).toBe(false);
+      });
+    });
+
     describe("getVolumeDisplay", () => {
       it("should return formatted volume with percentage", () => {
         const player = { player_id: "test", volume_control: "internal", volume_level: 75, volume_muted: false } as any;

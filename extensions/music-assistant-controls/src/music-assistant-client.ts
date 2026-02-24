@@ -580,6 +580,22 @@ export default class MusicAssistantClient {
   }
 
   /**
+   * Checks if a player supports mute control
+   *
+   * @param player - The player object to check
+   * @returns True if the player supports mute control, false otherwise
+   * @example
+   * ```typescript
+   * if (client.supportsMuteControl(player)) {
+   *   // Show mute controls
+   * }
+   * ```
+   */
+  supportsMuteControl(player?: Player): boolean {
+    return player?.mute_control !== "none" && player?.mute_control !== undefined;
+  }
+
+  /**
    * Gets a formatted volume display string
    *
    * @param player - The player object with volume information

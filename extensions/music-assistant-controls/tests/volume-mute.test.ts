@@ -22,6 +22,7 @@ describe("volume-mute command", () => {
     mockClientInstance = {
       volumeMute: jest.fn(),
       getPlayer: jest.fn(),
+      supportsMuteControl: jest.fn(),
     } as any;
 
     MockMusicAssistantClient.mockImplementation(() => mockClientInstance);
@@ -31,7 +32,8 @@ describe("volume-mute command", () => {
   it("should toggle from unmuted to muted and show feedback", async () => {
     const selectedPlayerID = "test-player-123";
     mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
-    mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: false } as any);
+    mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: false, mute_control: "absolute" } as any);
+    mockClientInstance.supportsMuteControl.mockReturnValue(true);
     mockClientInstance.volumeMute.mockResolvedValue(undefined);
     mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: true } as any);
 
@@ -40,6 +42,7 @@ describe("volume-mute command", () => {
     expect(mockGetSelectedQueueID).toHaveBeenCalledTimes(1);
     expect(MockMusicAssistantClient).toHaveBeenCalledTimes(1);
     expect(mockClientInstance.getPlayer).toHaveBeenCalledWith(selectedPlayerID);
+    expect(mockClientInstance.supportsMuteControl).toHaveBeenCalled();
     expect(mockClientInstance.volumeMute).toHaveBeenCalledWith(selectedPlayerID, true);
     expect(mockShowToast).toHaveBeenCalledWith({
       style: "success",
@@ -51,7 +54,8 @@ describe("volume-mute command", () => {
   it("should toggle from muted to unmuted and show feedback", async () => {
     const selectedPlayerID = "test-player-123";
     mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
-    mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: true } as any);
+    mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: true, mute_control: "absolute" } as any);
+    mockClientInstance.supportsMuteControl.mockReturnValue(true);
     mockClientInstance.volumeMute.mockResolvedValue(undefined);
     mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: false } as any);
 
@@ -60,6 +64,7 @@ describe("volume-mute command", () => {
     expect(mockGetSelectedQueueID).toHaveBeenCalledTimes(1);
     expect(MockMusicAssistantClient).toHaveBeenCalledTimes(1);
     expect(mockClientInstance.getPlayer).toHaveBeenCalledWith(selectedPlayerID);
+    expect(mockClientInstance.supportsMuteControl).toHaveBeenCalled();
     expect(mockClientInstance.volumeMute).toHaveBeenCalledWith(selectedPlayerID, false);
     expect(mockShowToast).toHaveBeenCalledWith({
       style: "success",
@@ -71,7 +76,8 @@ describe("volume-mute command", () => {
   it("should handle undefined volume_muted as false (unmuted)", async () => {
     const selectedPlayerID = "test-player-123";
     mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
-    mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: undefined } as any);
+    mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: undefined, mute_control: "absolute" } as any);
+    mockClientInstance.supportsMuteControl.mockReturnValue(true);
     mockClientInstance.volumeMute.mockResolvedValue(undefined);
     mockClientInstance.getPlayer.mockResolvedValueOnce({ volume_muted: true } as any);
 
@@ -95,12 +101,34 @@ describe("volume-mute command", () => {
     expect(mockShowFailureToast).not.toHaveBeenCalled();
   });
 
+  it("should show error toast when player does not support mute control", async () => {
+    const selectedPlayerID = "test-player-123";
+    mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
+    mockClientInstance.getPlayer.mockResolvedValue({ volume_muted: false, mute_control: "none" } as any);
+    mockClientInstance.supportsMuteControl.mockReturnValue(false);
+
+    await volumeMuteMain();
+
+    expect(mockGetSelectedQueueID).toHaveBeenCalledTimes(1);
+    expect(MockMusicAssistantClient).toHaveBeenCalledTimes(1);
+    expect(mockClientInstance.getPlayer).toHaveBeenCalledWith(selectedPlayerID);
+    expect(mockClientInstance.supportsMuteControl).toHaveBeenCalled();
+    expect(mockClientInstance.volumeMute).not.toHaveBeenCalled();
+    expect(mockShowToast).toHaveBeenCalledWith({
+      style: "failure",
+      title: "Mute not supported",
+      message: "This player does not support mute control",
+    });
+    expect(mockShowFailureToast).not.toHaveBeenCalled();
+  });
+
   it("should show failure toast when volume mute command fails", async () => {
     const selectedPlayerID = "test-player-123";
     const error = new Error("Connection failed");
 
     mockGetSelectedQueueID.mockResolvedValue(selectedPlayerID);
-    mockClientInstance.getPlayer.mockResolvedValue({ volume_muted: false } as any);
+    mockClientInstance.getPlayer.mockResolvedValue({ volume_muted: false, mute_control: "absolute" } as any);
+    mockClientInstance.supportsMuteControl.mockReturnValue(true);
     mockClientInstance.volumeMute.mockRejectedValue(error);
 
     await volumeMuteMain();
