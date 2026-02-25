@@ -49,15 +49,6 @@ export default function MusicLibraryHubCommand() {
     >
       <List.Section title="Tabs">
         <List.Item
-          title="Search"
-          icon={Icon.MagnifyingGlass}
-          actions={
-            <ActionPanel>
-              <Action title="Switch to Search" onAction={() => setActiveTab("search")} />
-            </ActionPanel>
-          }
-        />
-        <List.Item
           title="Browse"
           icon={Icon.Folder}
           actions={
@@ -933,7 +924,9 @@ function QueueManagerTab({ client }: { client: MusicAssistantClient }) {
             accessories={[
               {
                 text: item.duration
-                  ? `${Math.floor(item.duration / 60)}:${(item.duration % 60).toString().padStart(2, "0")}`
+                  ? `${Math.floor(item.duration / 60)}:${Math.floor(item.duration % 60)
+                      .toString()
+                      .padStart(2, "0")}`
                   : "",
               },
             ]}
