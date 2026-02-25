@@ -20,6 +20,10 @@
 - Visual feedback with toasts for all operations (add to queue, remove, clear, etc.)
 - Color-coded icons for different media types (artists, albums, tracks, playlists)
 
+### ✨ New Features
+
+- **Previous Song command** - Navigate backward through the queue with a dedicated "Previous Song" command that mirrors the existing "Next Song" functionality
+
 ### ⚡ Performance & Reliability
 
 - Menu bar is now instant and flicker-free — appears immediately even with slow Music Assistant servers, with responsive controls and smooth background updates
