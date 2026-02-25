@@ -1,13 +1,21 @@
 import { Action, ActionPanel, Detail, Icon, showToast, Toast } from "@raycast/api";
-import { useCachedPromise, useLocalStorage } from "@raycast/utils";
+import { useCachedPromise } from "@raycast/utils";
 import MusicAssistantClient from "./music-assistant-client";
-import { selectedPlayerKey, StoredQueue } from "./use-selected-player-id";
+import { getSelectedQueueID } from "./use-selected-player-id";
 import { RepeatMode } from "./external-code/interfaces";
-import React from "react";
 
 export default function CurrentTrackCommand() {
   const client = new MusicAssistantClient();
-  const { value: storedQueueId } = useLocalStorage<StoredQueue>(selectedPlayerKey);
+
+  const { isLoading: queueIdLoading, data: storedQueueId } = useCachedPromise(
+    async () => await getSelectedQueueID(),
+    [],
+  );
+
+  // If no queue selected, getSelectedQueueID already redirects to set-active-player
+  if (!storedQueueId) {
+    return <Detail isLoading={queueIdLoading} markdown="# Loading...\n\nFetching your player selection..." />;
+  }
 
   const {
     isLoading,
@@ -15,11 +23,10 @@ export default function CurrentTrackCommand() {
     revalidate,
   } = useCachedPromise(
     async () => {
-      const queues = await client.getActiveQueues();
-      const activeQueue = client.findActiveQueue(queues, storedQueueId);
-      return activeQueue;
+      // Fetch the specific queue for the selected player
+      return await client.getPlayerQueue(storedQueueId);
     },
-    [],
+    [storedQueueId],
     {
       keepPreviousData: true,
     },
@@ -110,7 +117,7 @@ export default function CurrentTrackCommand() {
   // Build markdown content for the detail view
   const buildMarkdown = (): string => {
     if (!queueData?.current_item) {
-      return "# No Track Playing\n\nNo active track found on the selected player.";
+      return "# No Track Playing\n\nNo track is currently playing on the selected player.";
     }
 
     const item = queueData.current_item;
