@@ -114,7 +114,7 @@ export default function CurrentTrackCommand() {
     initialData: [],
   });
 
-  // Build markdown content for the detail view
+  // Build markdown content for the detail view (left column with album art and title)
   const buildMarkdown = (): string => {
     if (!queueData?.current_item) {
       return "# No Track Playing\n\nNo track is currently playing on the selected player.";
@@ -122,41 +122,52 @@ export default function CurrentTrackCommand() {
 
     const item = queueData.current_item;
     const albumArt = client.getQueueAlbumArt(queueData);
-    const duration = client.formatDuration(item.duration);
 
-    // Build markdown with album art and track details
     let markdown = "";
 
-    // Add album artwork if available (centered, large)
+    // Album artwork
     if (albumArt) {
-      markdown += `<img src="${albumArt}" width="300" height="300" />\n\n`;
+      markdown += `![Album Art](${albumArt}?raycast-width=220&raycast-height=220)\n\n`;
     }
 
-    // Add track information
+    // Track title
     markdown += `# ${item.name}\n\n`;
 
-    if (item.artists && item.artists.length > 0) {
-      const artistNames = item.artists.map((a) => a.name).join(", ");
-      markdown += `**Artist:** ${artistNames}\n\n`;
-    }
-
-    if (item.album) {
-      markdown += `**Album:** ${item.album.name}\n\n`;
-    }
-
-    markdown += `**Duration:** ${duration}\n\n`;
-
-    // Queue and player information
-    markdown += `---\n\n`;
-    markdown += `**Queue:** ${queueData.display_name}\n\n`;
-    markdown += `**State:** ${queueData.state.toUpperCase()}\n\n`;
-
-    // Playback settings
-    markdown += `---\n\n`;
-    markdown += `**${client.getShuffleText(queueData.shuffle_enabled)}**\n\n`;
-    markdown += `**${client.getRepeatText(queueData.repeat_mode)}**\n\n`;
-
     return markdown;
+  };
+
+  // Build metadata for right panel
+  const buildMetadata = () => {
+    if (!queueData?.current_item) {
+      return null;
+    }
+
+    const item = queueData.current_item;
+    const duration = client.formatDuration(item.duration);
+
+    return (
+      <Detail.Metadata>
+        {item.artists && item.artists.length > 0 && (
+          <Detail.Metadata.Label title="Artist" text={item.artists.map((a) => a.name).join(", ")} />
+        )}
+
+        {item.album && <Detail.Metadata.Label title="Album" text={item.album.name} />}
+
+        <Detail.Metadata.Label title="Duration" text={duration} />
+
+        <Detail.Metadata.Separator />
+
+        <Detail.Metadata.Label title="Queue" text={queueData.display_name} />
+
+        <Detail.Metadata.Label title="State" text={queueData.state.toUpperCase()} />
+
+        <Detail.Metadata.Separator />
+
+        <Detail.Metadata.Label title="Shuffle" text={queueData.shuffle_enabled ? "Enabled" : "Disabled"} />
+
+        <Detail.Metadata.Label title="Repeat" text={client.getRepeatText(queueData.repeat_mode)} />
+      </Detail.Metadata>
+    );
   };
 
   return (
@@ -164,25 +175,11 @@ export default function CurrentTrackCommand() {
       isLoading={isLoading}
       markdown={buildMarkdown()}
       navigationTitle="Current Track"
+      metadata={buildMetadata()}
       actions={
         <ActionPanel>
           {queueData && (
             <>
-              <ActionPanel.Section title="Queue Controls">
-                <Action
-                  title="Toggle Shuffle"
-                  icon={Icon.Shuffle}
-                  onAction={toggleShuffle}
-                  shortcut={{ modifiers: ["cmd"], key: "s" }}
-                />
-                <Action
-                  title="Cycle Repeat Mode"
-                  icon={Icon.Repeat}
-                  onAction={cycleRepeat}
-                  shortcut={{ modifiers: ["cmd"], key: "r" }}
-                />
-              </ActionPanel.Section>
-
               {queueData.current_item && (
                 <ActionPanel.Section title="Track Actions">
                   <Action
@@ -208,6 +205,21 @@ export default function CurrentTrackCommand() {
                   )}
                 </ActionPanel.Section>
               )}
+
+              <ActionPanel.Section title="Queue Controls">
+                <Action
+                  title="Toggle Shuffle"
+                  icon={Icon.Shuffle}
+                  onAction={toggleShuffle}
+                  shortcut={{ modifiers: ["cmd"], key: "s" }}
+                />
+                <Action
+                  title="Cycle Repeat Mode"
+                  icon={Icon.Repeat}
+                  onAction={cycleRepeat}
+                  shortcut={{ modifiers: ["cmd"], key: "r" }}
+                />
+              </ActionPanel.Section>
 
               <ActionPanel.Section title="Refresh">
                 <Action
