@@ -1,7 +1,21 @@
 import executeApiCommand from "./api-command";
 import { showHUD, getPreferenceValues } from "@raycast/api";
 import { storeSelectedQueueID, StoredQueue } from "./use-selected-player-id";
-import { PlayerQueue, PlayerState, Player, RepeatMode, Playlist, MediaItemType } from "./external-code/interfaces";
+import {
+  PlayerQueue,
+  PlayerState,
+  Player,
+  Artist,
+  Album,
+  Track,
+  Playlist,
+  SearchResults,
+  ItemMapping,
+  QueueItem,
+  QueueOption,
+  RepeatMode,
+  MediaItemType,
+} from "./external-code/interfaces";
 
 /**
  * Client for interacting with Music Assistant API and handling UI logic
@@ -47,6 +61,20 @@ export default class MusicAssistantClient {
    */
   async next(playerId: string): Promise<void> {
     await executeApiCommand(async (api) => await api.playerCommandNext(playerId));
+  }
+
+  /**
+   * Go back to the previous track on the specified player
+   *
+   * @param playerId - The unique identifier of the player to control
+   * @throws {Error} When the API command fails or player is unavailable
+   * @example
+   * ```typescript
+   * await client.previous("living-room-player");
+   * ```
+   */
+  async previous(playerId: string): Promise<void> {
+    await executeApiCommand(async (api) => await api.playerCommandPrevious(playerId));
   }
 
   /**
@@ -126,6 +154,21 @@ export default class MusicAssistantClient {
    */
   async volumeDown(playerId: string): Promise<void> {
     await executeApiCommand(async (api) => await api.playerCommandVolumeDown(playerId));
+  }
+
+  /**
+   * Set the mute state on the specified player
+   *
+   * @param playerId - The unique identifier of the player to control
+   * @param muted - Whether the player should be muted (true) or unmuted (false)
+   * @throws {Error} When the API command fails or player is unavailable
+   * @example
+   * ```typescript
+   * await client.volumeMute("living-room-player", true);
+   * ```
+   */
+  async volumeMute(playerId: string, muted: boolean): Promise<void> {
+    await executeApiCommand(async (api) => await api.playerCommandVolumeMute(playerId, muted));
   }
 
   /**
@@ -565,6 +608,22 @@ export default class MusicAssistantClient {
   }
 
   /**
+   * Checks if a player supports mute control
+   *
+   * @param player - The player object to check
+   * @returns True if the player supports mute control, false otherwise
+   * @example
+   * ```typescript
+   * if (client.supportsMuteControl(player)) {
+   *   // Show mute controls
+   * }
+   * ```
+   */
+  supportsMuteControl(player?: Player): boolean {
+    return player?.mute_control !== "none" && player?.mute_control !== undefined;
+  }
+
+  /**
    * Gets a formatted volume display string
    *
    * @param player - The player object with volume information
@@ -735,7 +794,8 @@ export default class MusicAssistantClient {
     );
   }
 
-  // Queue Control Methods for Current Track Command
+  // Queue Control Methods for Current Track Command & Library Management
+
   /**
    * Toggle shuffle mode on a queue
    *
@@ -776,37 +836,6 @@ export default class MusicAssistantClient {
    */
   async addToFavorites(item: string | MediaItemType): Promise<void> {
     await executeApiCommand(async (api) => await api.addItemToFavorites(item));
-  }
-
-  /**
-   * Get all library playlists
-   *
-   * @param limit - Maximum number of playlists to return
-   * @param offset - Number of playlists to skip
-   * @returns Promise that resolves to an array of Playlist objects
-   * @throws {Error} When the API command fails
-   * @example
-   * ```typescript
-   * const playlists = await client.getLibraryPlaylists(20, 0);
-   * ```
-   */
-  async getLibraryPlaylists(limit?: number, offset?: number): Promise<Playlist[]> {
-    return await executeApiCommand(async (api) => await api.getLibraryPlaylists(undefined, undefined, limit, offset));
-  }
-
-  /**
-   * Add tracks to a playlist
-   *
-   * @param playlistId - The playlist ID to add tracks to
-   * @param trackUris - Array of track URIs to add
-   * @throws {Error} When the API command fails
-   * @example
-   * ```typescript
-   * await client.addTracksToPlaylist("playlist-123", ["track-uri-1"]);
-   * ```
-   */
-  async addTracksToPlaylist(playlistId: string | number, trackUris: string[]): Promise<void> {
-    await executeApiCommand(async (api) => await api.addPlaylistTracks(playlistId, trackUris));
   }
 
   /**
@@ -857,5 +886,279 @@ export default class MusicAssistantClient {
       [RepeatMode.ALL]: "ALL",
     };
     return `Repeat: ${modeMap[repeatMode]}`;
+  }
+
+  // Library and Search Methods
+
+  /**
+   * Perform global search for media items across all providers
+   *
+   * @param searchQuery - Search query string
+   * @param limit - Maximum number of results to return per media type (default: 50)
+   * @returns Promise with search results containing artists, albums, tracks, playlists, etc.
+   * @example
+   * ```typescript
+   * const results = await client.search("Beatles", 50);
+   * console.log(`Found ${results.artists.length} artists, ${results.albums.length} albums`);
+   * ```
+   */
+  async search(searchQuery: string, limit = 50): Promise<SearchResults> {
+    return await executeApiCommand(async (api) => await api.search(searchQuery, undefined, limit));
+  }
+
+  /**
+   * Get library artists with optional filtering and pagination
+   *
+   * @param search - Optional search query to filter artists
+   * @param limit - Maximum number of results to return
+   * @param offset - Number of results to skip for pagination
+   * @returns Promise with array of Artist objects
+   * @example
+   * ```typescript
+   * const artists = await client.getLibraryArtists("Queen", 20, 0);
+   * ```
+   */
+  async getLibraryArtists(search?: string, limit = 20, offset = 0): Promise<Artist[]> {
+    return await executeApiCommand(async (api) => await api.getLibraryArtists(undefined, search, limit, offset));
+  }
+
+  /**
+   * Get library albums with optional filtering and pagination
+   *
+   * @param search - Optional search query to filter albums
+   * @param limit - Maximum number of results to return
+   * @param offset - Number of results to skip for pagination
+   * @returns Promise with array of Album objects
+   * @example
+   * ```typescript
+   * const albums = await client.getLibraryAlbums("Abbey Road", 20, 0);
+   * ```
+   */
+  async getLibraryAlbums(search?: string, limit = 20, offset = 0): Promise<Album[]> {
+    return await executeApiCommand(async (api) => await api.getLibraryAlbums(undefined, search, limit, offset));
+  }
+
+  /**
+   * Get library playlists with optional filtering and pagination
+   *
+   * @param search - Optional search query to filter playlists
+   * @param limit - Maximum number of results to return
+   * @param offset - Number of results to skip for pagination
+   * @returns Promise with array of Playlist objects
+   * @example
+   * ```typescript
+   * const playlists = await client.getLibraryPlaylists("Rock", 20, 0);
+   * ```
+   */
+  async getLibraryPlaylists(search?: string, limit = 20, offset = 0): Promise<Playlist[]> {
+    return await executeApiCommand(async (api) => await api.getLibraryPlaylists(undefined, search, limit, offset));
+  }
+
+  /**
+   * Add tracks to a playlist
+   *
+   * @param playlistId - The playlist ID to add tracks to
+   * @param trackUris - Array of track URIs to add
+   * @throws {Error} When the API command fails
+   * @example
+   * ```typescript
+   * await client.addTracksToPlaylist("playlist-123", ["track-uri-1"]);
+   * ```
+   */
+  async addTracksToPlaylist(playlistId: string | number, trackUris: string[]): Promise<void> {
+    await executeApiCommand(async (api) => await api.addPlaylistTracks(playlistId, trackUris));
+  }
+
+  /**
+   * Get albums by a specific artist
+   *
+   * @param itemId - The ID of the artist
+   * @param providerInstanceIdOrDomain - The provider instance ID or domain
+   * @returns Promise with array of Album objects
+   * @example
+   * ```typescript
+   * const albums = await client.getArtistAlbums("artist-123", "library");
+   * ```
+   */
+  async getArtistAlbums(itemId: string, providerInstanceIdOrDomain: string): Promise<Album[]> {
+    return await executeApiCommand(async (api) => await api.getArtistAlbums(itemId, providerInstanceIdOrDomain, true));
+  }
+
+  /**
+   * Get tracks in a specific album
+   *
+   * @param itemId - The ID of the album
+   * @param providerInstanceIdOrDomain - The provider instance ID or domain
+   * @returns Promise with array of Track objects
+   * @example
+   * ```typescript
+   * const tracks = await client.getAlbumTracks("album-123", "library");
+   * ```
+   */
+  async getAlbumTracks(itemId: string, providerInstanceIdOrDomain: string): Promise<Track[]> {
+    return await executeApiCommand(async (api) => await api.getAlbumTracks(itemId, providerInstanceIdOrDomain, true));
+  }
+
+  /**
+   * Get tracks in a specific playlist
+   *
+   * @param itemId - The ID of the playlist
+   * @param providerInstanceIdOrDomain - The provider instance ID or domain
+   * @returns Promise with array of Track objects
+   * @example
+   * ```typescript
+   * const tracks = await client.getPlaylistTracks("playlist-123", "library");
+   * ```
+   */
+  async getPlaylistTracks(itemId: string, providerInstanceIdOrDomain: string): Promise<Track[]> {
+    return await executeApiCommand(
+      async (api) => await api.getPlaylistTracks(itemId, providerInstanceIdOrDomain, false),
+    );
+  }
+
+  /**
+   * Get recently played items
+   *
+   * @param limit - Maximum number of items to return (default: 30)
+   * @returns Promise with array of ItemMapping objects
+   * @example
+   * ```typescript
+   * const recent = await client.getRecentlyPlayedItems(30);
+   * ```
+   */
+  async getRecentlyPlayedItems(limit = 30): Promise<ItemMapping[]> {
+    return await executeApiCommand(async (api) => await api.getRecentlyPlayedItems(limit));
+  }
+
+  /**
+   * Get queue items for a specific player queue
+   *
+   * @param queueId - The ID of the queue
+   * @param limit - Maximum number of items to return
+   * @param offset - Number of items to skip for pagination
+   * @returns Promise with array of QueueItem objects
+   * @example
+   * ```typescript
+   * const queueItems = await client.getPlayerQueueItems("queue-123", 100, 0);
+   * ```
+   */
+  async getPlayerQueueItems(queueId: string, limit = 100, offset = 0): Promise<QueueItem[]> {
+    return await executeApiCommand(async (api) => await api.getPlayerQueueItems(queueId, limit, offset));
+  }
+
+  /**
+   * Play media items on a specific queue
+   *
+   * @param media - Media item(s) to play
+   * @param queueId - The ID of the queue to play on
+   * @param option - Queue option (PLAY, NEXT, ADD, etc.)
+   * @returns Promise that resolves when playback starts
+   * @example
+   * ```typescript
+   * await client.playMedia(track, "queue-123", QueueOption.NEXT);
+   * ```
+   */
+  async playMedia(media: MediaItemType, queueId: string, option = QueueOption.NEXT): Promise<void> {
+    return await executeApiCommand(async (api) => await api.playMedia(media, option, false, undefined, queueId));
+  }
+
+  /**
+   * Clear all items from a queue
+   *
+   * @param queueId - The ID of the queue to clear
+   * @returns Promise that resolves when queue is cleared
+   * @example
+   * ```typescript
+   * await client.queueCommandClear("queue-123");
+   * ```
+   */
+  async queueCommandClear(queueId: string): Promise<void> {
+    return await executeApiCommand(async (api) => {
+      api.queueCommandClear(queueId);
+    });
+  }
+
+  /**
+   * Delete an item from a queue
+   *
+   * @param queueId - The ID of the queue
+   * @param itemIdOrIndex - The queue item ID or index to delete
+   * @returns Promise that resolves when item is deleted
+   * @example
+   * ```typescript
+   * await client.queueCommandDelete("queue-123", "item-456");
+   * ```
+   */
+  async queueCommandDelete(queueId: string, itemIdOrIndex: string | number): Promise<void> {
+    return await executeApiCommand(async (api) => {
+      api.queueCommandDelete(queueId, itemIdOrIndex);
+    });
+  }
+
+  /**
+   * Move an item in the queue
+   *
+   * @param queueId - The ID of the queue
+   * @param queueItemId - The queue item ID to move
+   * @param posShift - Number of positions to move (positive = down, negative = up, 0 = next)
+   * @returns Promise that resolves when item is moved
+   * @example
+   * ```typescript
+   * await client.queueCommandMoveItem("queue-123", "item-456", -1); // Move up
+   * ```
+   */
+  async queueCommandMoveItem(queueId: string, queueItemId: string, posShift: number): Promise<void> {
+    return await executeApiCommand(async (api) => {
+      api.queueCommandMoveItem(queueId, queueItemId, posShift);
+    });
+  }
+
+  /**
+   * Get the current queue for a player
+   *
+   * @param queueId - The ID of the queue
+   * @returns Promise with PlayerQueue object
+   * @example
+   * ```typescript
+   * const queue = await client.getPlayerQueue("queue-123");
+   * console.log(`Shuffle: ${queue.shuffle_enabled}, Repeat: ${queue.repeat_mode}`);
+   * ```
+   */
+  async getPlayerQueue(queueId: string): Promise<PlayerQueue> {
+    return await executeApiCommand(async (api) => await api.getPlayerQueue(queueId));
+  }
+
+  /**
+   * Toggle shuffle on a queue
+   *
+   * @param queueId - The ID of the queue
+   * @param shuffleEnabled - Whether to enable shuffle
+   * @returns Promise that resolves when shuffle is toggled
+   * @example
+   * ```typescript
+   * await client.queueCommandShuffle("queue-123", true);
+   * ```
+   */
+  async queueCommandShuffle(queueId: string, shuffleEnabled: boolean): Promise<void> {
+    return await executeApiCommand(async (api) => {
+      api.queueCommandShuffle(queueId, shuffleEnabled);
+    });
+  }
+
+  /**
+   * Set repeat mode on a queue
+   *
+   * @param queueId - The ID of the queue
+   * @param repeatMode - The repeat mode to set
+   * @returns Promise that resolves when repeat mode is set
+   * @example
+   * ```typescript
+   * await client.queueCommandRepeat("queue-123", RepeatMode.ALL);
+   * ```
+   */
+  async queueCommandRepeat(queueId: string, repeatMode: RepeatMode): Promise<void> {
+    return await executeApiCommand(async (api) => {
+      api.queueCommandRepeat(queueId, repeatMode);
+    });
   }
 }
